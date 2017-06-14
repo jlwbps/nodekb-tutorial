@@ -32,6 +32,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // Parse application/json
 app.use(bodyParser.json());
 
+// Set Public Folder
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Home Route
 app.get('/', (req, res) => {
   Article.find({}, (err, articles) => {
@@ -43,6 +46,15 @@ app.get('/', (req, res) => {
         articles: articles,
       });
     }
+  });
+});
+
+// Get Single Article
+app.get('/article/:id', (req, res) => {
+  Article.findById(req.params.id, (err, article) => {
+    res.render('article', {
+      article: article
+    });
   });
 });
 
