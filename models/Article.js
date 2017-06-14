@@ -1,5 +1,7 @@
 let mongoose = require('mongoose');
 
+mongoose.Promise = global.Promise;
+
 // Article Schema
 let articleSchma = mongoose.Schema({
   title: {
@@ -16,4 +18,4 @@ let articleSchma = mongoose.Schema({
   }
 });
 
-let Article = module.exports = mongoose.model('Article', articleSchma)
+let Article = module.exports = mongoose.model('Article', articleSchma);
