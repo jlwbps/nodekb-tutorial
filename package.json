@@ -1,0 +1,24 @@
+{
+  "name": "nodekb-tutorial",
+  "version": "1.0.0",
+  "description": "Simple knowledgebase app",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app"
+  },
+  "author": "Jason L. West (jlwest@basspro.com)",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jlwbps/nodekb-tutorial.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jlwbps/nodekb-tutorial/issues"
+  },
+  "homepage": "https://github.com/jlwbps/nodekb-tutorial#readme",
+  "dependencies": {
+    "express": "^4.15.3",
+    "pug": "^2.0.0-rc.2",
+    "pug-lint": "^2.4.0"
+  }
+}
