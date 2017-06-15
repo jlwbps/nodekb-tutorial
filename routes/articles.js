@@ -3,19 +3,21 @@ const router = express.Router();
 
 // Bring in Article Model
 let Article = require('../models/Article');
+// Bring in User Model
+let User = require('../models/User');
 
-// Add Route
-router.get('/add', (req, res) => {
+// Add Article Form
+router.get('/add', ensureAuthenticated, (req, res) => {
   res.render('add_article', {
     title: "Add Article",
   });
 });
 
 // Add Submit POST Route
-router.post('/add', (req, res) => {
+router.post('/add', ensureAuthenticated, (req, res) => {
   // field validation
   req.checkBody('title', 'Title is required').notEmpty();
-  req.checkBody('author', 'Author is required.').notEmpty();
+  //req.checkBody('author', 'Author is required.').notEmpty();
   req.checkBody('body', 'Body is required.').notEmpty();
 
   // Get Errors
@@ -29,7 +31,7 @@ router.post('/add', (req, res) => {
   } else {
     let article = new Article();
     article.title = req.body.title;
-    article.author = req.body.author;
+    article.author = req.user._id;
     article.body = req.body.body;
 
     article.save((err) => {
@@ -45,8 +47,14 @@ router.post('/add', (req, res) => {
 });
 
 // Load Edit Form
-router.get('/edit/:id', (req, res) => {
+router.get('/edit/:id', ensureAuthenticated, (req, res) => {
   Article.findById(req.params.id, (err, article) => {
+
+    if (article.author != req.user._id) {
+      req.flash('danger', 'Not Authorized');
+      res.redirect('/');
+    }
+
     res.render('edit_article', {
       title: 'Edit Article',
       article: article
@@ -55,10 +63,10 @@ router.get('/edit/:id', (req, res) => {
 });
 
 // Update Submit POST Route
-router.post('/edit/:id', (req, res) => {
+router.post('/edit/:id', ensureAuthenticated, (req, res) => {
   let article = {};
   article.title = req.body.title;
-  article.author = req.body.author;
+  article.author = req.user._id;
   article.body = req.body.body;
 
   let query = { _id: req.params.id };
@@ -75,24 +83,49 @@ router.post('/edit/:id', (req, res) => {
 });
 
 // Delete Article
-router.delete('/:id', (req, res) => {
+router.delete('/:id', ensureAuthenticated, (req, res) => {
+  if (!req.user._id) {
+    res.status(500).send();
+  }
+
   let query = { _id: req.params.id }
 
-  Article.remove(query, (err) => {
-    if (err) {
-      console.log(err);
+  Article.findById(req.params.id, (err, article) => {
+    if (article.author != req.user._id) {
+      res.status(500).send();
+    } else {
+
+      Article.remove(query, (err) => {
+        if (err) {
+          console.log(err);
+        }
+        res.send('Success');
+      });
+
     }
-    res.send('Success');
   });
 });
 
 // Get Single Article
 router.get('/:id', (req, res) => {
   Article.findById(req.params.id, (err, article) => {
-    res.render('article', {
-      article: article
+    User.findById(article.author, (err, user) => {
+      res.render('article', {
+        article: article,
+        author: user.name
+      });
     });
   });
 });
+
+// Access Control
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  } else {
+    req.flash('danger', 'Please login');
+    res.redirect('/user/login');
+  }
+}
 
 module.exports = router;
